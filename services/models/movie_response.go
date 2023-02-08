@@ -8,5 +8,4 @@ type MovieResponse struct {
 	Producer     string `json:"producer"`
 	ReleaseDate  string `json:"release_date"`
 	URL          string `json:"url"`
-	CommentCount int    `json:"comment_count"`
 }

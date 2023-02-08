@@ -37,6 +37,18 @@ func (q *Queries) CreateComment(ctx context.Context, arg CreateCommentParams) (C
 	return i, err
 }
 
+const getCommentNumber = `-- name: GetCommentNumber :one
+SELECT COUNT(*) FROM comments
+WHERE movie_id = $1
+`
+
+func (q *Queries) GetCommentNumber(ctx context.Context, movieID string) (int64, error) {
+	row := q.db.QueryRowContext(ctx, getCommentNumber, movieID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const listComments = `-- name: ListComments :many
 SELECT id, movie_id, comment_ip_address, comment, created_at FROM comments
 WHERE movie_id = $1

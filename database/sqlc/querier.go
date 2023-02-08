@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	CreateComment(ctx context.Context, arg CreateCommentParams) (Comments, error)
+	GetCommentNumber(ctx context.Context, movieID string) (int64, error)
 	ListComments(ctx context.Context, arg ListCommentsParams) ([]Comments, error)
 }
 

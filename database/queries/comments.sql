@@ -12,3 +12,7 @@ WHERE movie_id = $1
 ORDER BY date(created_at) DESC
 LIMIT $2
 OFFSET $3;
+
+-- name: GetCommentNumber :one
+SELECT COUNT(*) FROM comments
+WHERE movie_id = $1;
