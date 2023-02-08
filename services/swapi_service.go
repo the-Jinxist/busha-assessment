@@ -92,6 +92,10 @@ func (service *SwapiService) GetMovies() ([]*models.MovieResponse, error) {
 }
 
 func (service *SwapiService) GetMovieCharacters(movieID string) (*models.CharactersResponse, error) {
+	//Get the single movie
 
+	//Loop through character's list and get the character profile
+
+	//Send the list
 	return nil, nil
 }

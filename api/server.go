@@ -35,6 +35,8 @@ func (server *Server) serveRouter() {
 	router := gin.Default()
 
 	router.GET("/movies", server.getMovies)
+	router.POST("/comment", server.postComment)
+	router.GET("/comments", server.getComments)
 
 	server.router = router
 }

@@ -9,7 +9,7 @@ RETURNING *;
 -- name: ListComments :many
 SELECT * FROM comments
 WHERE movie_id = $1
-ORDER BY date(created_at) DESC
+ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3;
 

@@ -52,7 +52,7 @@ func (q *Queries) GetCommentNumber(ctx context.Context, movieID string) (int64, 
 const listComments = `-- name: ListComments :many
 SELECT id, movie_id, comment_ip_address, comment, created_at FROM comments
 WHERE movie_id = $1
-ORDER BY date(created_at) DESC
+ORDER BY created_at DESC
 LIMIT $2
 OFFSET $3
 `
