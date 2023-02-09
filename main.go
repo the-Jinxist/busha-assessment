@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("error while opening database: %s", err)
 	}
 
-	runDBMigrations("/database/migration", config.DBSource)
+	runDBMigrations("file://database/migration", config.DBSource)
 
 	redisClient := cache.NewRedis(config)
 
@@ -52,6 +52,9 @@ func runHTTPServer(config util.Config, store database.Store, movieService servic
 }
 
 func runDBMigrations(migrationURL string, dbSourceString string) {
+
+	log.Printf("migrationURL: %s, dbSourceString: %s", migrationURL, dbSourceString)
+
 	migration, err := migrate.New(migrationURL, dbSourceString)
 	if err != nil {
 		log.Fatalf("cannot create new migrate instance: %s", err.Error())
