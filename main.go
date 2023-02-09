@@ -3,8 +3,9 @@ package main
 import (
 	"database/sql"
 	"log"
+	"os"
 
-	_ "github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/github"
 	"github.com/the-Jinxist/busha-assessment/api"
@@ -20,10 +21,12 @@ func main() {
 		log.Fatalf("cannot load config: %s", err)
 	}
 
-	conn, err := sql.Open(config.DBDriver, config.DBSource)
+	conn, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalf("error while opening database: %s", err)
 	}
+
+	runDBMigrations("file://database/migration", os.Getenv("DATABASE_URL"))
 
 	redisClient := cache.NewRedis(config)
 
@@ -47,4 +50,18 @@ func runHTTPServer(config util.Config, store database.Store, movieService servic
 	if err != nil {
 		log.Fatalf("start server: %s", err)
 	}
+}
+
+func runDBMigrations(migrationURL string, dbSourceString string) {
+	migration, err := migrate.New(migrationURL, dbSourceString)
+	if err != nil {
+		log.Fatalf("cannot create new migrate instance: %s", err.Error())
+	}
+
+	err = migration.Up()
+	if err != nil && err != migrate.ErrNoChange {
+		log.Fatalf("cannot run up migrations: %s", err.Error())
+	}
+
+	log.Fatalf("db migrated successfully")
 }
