@@ -4,14 +4,15 @@ import (
 	"database/sql"
 	"log"
 
-	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/postgres"
-	_ "github.com/golang-migrate/migrate/v4/source/github"
 	"github.com/the-Jinxist/busha-assessment/api"
 	"github.com/the-Jinxist/busha-assessment/database/cache"
 	database "github.com/the-Jinxist/busha-assessment/database/sqlc"
 	"github.com/the-Jinxist/busha-assessment/services"
 	"github.com/the-Jinxist/busha-assessment/util"
+
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/database/postgres"
+	_ "github.com/golang-migrate/migrate/v4/source/github"
 )
 
 func main() {
