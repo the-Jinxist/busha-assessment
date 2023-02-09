@@ -27,7 +27,7 @@ type RedisStruct struct {
 	Movies []*models.MovieResponse `json:"movies"`
 }
 
-func (i *RedisStruct) MarshalBinary() (data []byte, err error) {
+func (i RedisStruct) MarshalBinary() (data []byte, err error) {
 	bytes, err := json.Marshal(i)
 	return bytes, err
 }
@@ -48,14 +48,13 @@ func (s *Server) getMovies(ctx *gin.Context) {
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
 			return
 		}
-
 	}
 
 	if len(redisResponse.Movies) > 0 {
-		log.Printf("retrieved redis value: %v", redisResponse.Movies)
+
 		rawResponse = redisResponse.Movies
 
-		apiResponse, err := s.getFullAPIResponse(ctx, rawResponse)
+		apiResponse, err := s.GetFullAPIResponse(ctx, rawResponse)
 		if err != nil {
 			log.Printf("error while getting full api response: %s", err)
 			ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
@@ -76,7 +75,7 @@ func (s *Server) getMovies(ctx *gin.Context) {
 		return
 	}
 
-	apiResponse, err := s.getFullAPIResponse(ctx, rawResponse)
+	apiResponse, err := s.GetFullAPIResponse(ctx, rawResponse)
 	if err != nil {
 		log.Printf("error while getting full api response: %s", err)
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
@@ -100,7 +99,7 @@ func (s *Server) getMovies(ctx *gin.Context) {
 
 }
 
-func (s *Server) getFullAPIResponse(ctx *gin.Context, rawResponse []*models.MovieResponse) ([]*MovieAPIResponse, error) {
+func (s *Server) GetFullAPIResponse(ctx *gin.Context, rawResponse []*models.MovieResponse) ([]*MovieAPIResponse, error) {
 	result := make([]*MovieAPIResponse, 0, 7)
 	for index := range rawResponse {
 		movie := rawResponse[index]
