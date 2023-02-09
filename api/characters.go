@@ -5,14 +5,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"sort"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 	"github.com/the-Jinxist/busha-assessment/services/models"
-	"github.com/the-Jinxist/busha-assessment/util"
 )
 
 type CharacterAPIResponse struct {
@@ -52,41 +48,8 @@ func (s *Server) getCharacters(ctx *gin.Context) {
 		return
 	}
 
-	redisKey := ctx.Request.URL.String()
-
-	if err != nil {
-		log.Printf("error while marshalling request: %s", err)
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusBadRequest))
-		return
-	}
-
 	response := CharacterAPIResponse{}
 
-	redisClient, err := s.GetRedisClient()
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
-		return
-	}
-
-	err = redisClient.Get(ctx, string(redisKey)).Scan(&response)
-	if err != nil {
-		if err != redis.Nil {
-			log.Printf("error while getting redis value: %s", err)
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
-			return
-		}
-	}
-
-	if len(response.Characters) > 0 {
-		ctx.JSON(http.StatusOK, gin.H{
-			"status": http.StatusOK,
-			"data":   response,
-		})
-
-		return
-	}
-
-	//if not, make the call to the swapi service
 	var finalCharacters []*models.CharactersResponse
 	characters, err := s.MovieService.GetMovieCharacters((strconv.Itoa(int(request.MovieID))))
 	if err != nil {
@@ -97,134 +60,22 @@ func (s *Server) getCharacters(ctx *gin.Context) {
 
 	//parse the sort/filter elements if any
 	if len(request.Sort) > 0 {
-		sortCharacters(request.Sort, request.Order, characters)
+		SortCharacters(request.Sort, request.Order, characters)
 	}
 
 	finalCharacters = characters
 
 	//filter the list
 	if len(request.FilterBy) > 0 {
-		filteredCharacters := filterCharacters(request.FilterBy, characters)
+		filteredCharacters := FilterCharacters(request.FilterBy, characters)
 		finalCharacters = filteredCharacters
 	}
 
-	//save to redis using a combination of the endpoint and the params
 	response.Characters = finalCharacters
-	redisClient.Set(ctx, string(redisKey), response, time.Hour)
 
 	//send to user
 	ctx.JSON(http.StatusOK, gin.H{
 		"status": http.StatusOK,
 		"data":   response,
 	})
-}
-
-func sortCharacters(sortKey string, orderKey string, characters []*models.CharactersResponse) {
-
-	if sortKey == util.HEIGHT {
-		sort.Slice(characters, func(i, j int) bool {
-			height1, err := strconv.Atoi(characters[i].Height)
-			if err != nil {
-				height1 = 0
-			}
-
-			height2, err := strconv.Atoi(characters[j].Height)
-			if err != nil {
-				height2 = 0
-			}
-
-			if orderKey == util.ASC {
-				return height1 < height2
-			}
-
-			if orderKey == util.DESC {
-				return height1 > height2
-			}
-
-			return height1 > height2
-
-		})
-
-		return
-	}
-
-	if sortKey == util.GENDER {
-		sort.Slice(characters, func(i, j int) bool {
-			character1 := characters[i]
-			character2 := characters[j]
-
-			if orderKey == util.ASC {
-				return characterSortingWhenAsc(character1, character2)
-			}
-
-			if orderKey == util.DESC {
-				return characterSortingWhenDsc(character1, character2)
-			}
-
-			return characterSortingWhenAsc(character1, character2)
-
-		})
-
-		return
-	}
-
-	if sortKey == util.NAME {
-		sort.Slice(characters, func(i, j int) bool {
-			character1 := characters[i]
-			character2 := characters[j]
-
-			if orderKey == util.ASC {
-				return character1.Name < character2.Name
-			}
-
-			if orderKey == util.DESC {
-				return character1.Name > character2.Name
-			}
-
-			return character1.Name < character2.Name
-
-		})
-
-		return
-	}
-
-}
-
-func characterSortingWhenAsc(character1 *models.CharactersResponse, character2 *models.CharactersResponse) bool {
-
-	if character1.Gender == "female" {
-		return true
-	}
-
-	if character1.Gender == "male" && character2.Gender == "n/a" {
-		return true
-	}
-
-	return false
-}
-
-func characterSortingWhenDsc(character1 *models.CharactersResponse, character2 *models.CharactersResponse) bool {
-	if character1.Gender == "n/a" {
-		return true
-	}
-
-	if character1.Gender == "female" && character2.Gender == "male" {
-		return true
-	}
-
-	return false
-}
-
-func filterCharacters(filterKey string, characters []*models.CharactersResponse) []*models.CharactersResponse {
-
-	filteredList := make([]*models.CharactersResponse, 0, 7)
-
-	for index := range characters {
-		if characters[index].Gender == filterKey {
-			filteredList = append(filteredList, characters[index])
-		}
-	}
-
-	return filteredList
-
 }
