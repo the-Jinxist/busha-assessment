@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"log"
 
+	_ "github.com/lib/pq"
 	"github.com/the-Jinxist/busha-assessment/api"
 	"github.com/the-Jinxist/busha-assessment/database/cache"
 	database "github.com/the-Jinxist/busha-assessment/database/sqlc"
