@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("error while opening database: %s", err)
 	}
 
-	runDBMigrations("./database/migration", config.DBSource)
+	runDBMigrations("/database/migration", config.DBSource)
 
 	redisClient := cache.NewRedis(config)
 
