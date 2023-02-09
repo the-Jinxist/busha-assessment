@@ -14,10 +14,14 @@ func NewRedis(config util.Config) *redis.Client {
 		log.Fatalf("error occurred while creating redis instance: %s", err)
 	}
 
+	redisPassword := url.Password
+	redisAddress := url.Addr
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     url.Addr,
-		Password: "", // no password set
-		DB:       0,  // use default DB
+		Addr:     redisAddress,
+		Password: redisPassword, // no password set
+		DB:       0,             // use default DB
+
 	})
 
 	return rdb
