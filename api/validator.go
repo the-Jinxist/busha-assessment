@@ -6,8 +6,9 @@ import (
 	"github.com/go-playground/validator/v10"
 )
 
-// This methods creates a new function on the validator.Func interface that allows us to validate a field
+// These methods creates a new function on the validator.Func interface that allows us to validate a field
 // in our JSON validator
+
 var validSortType validator.Func = func(fieldLevel validator.FieldLevel) bool {
 	sortType, ok := fieldLevel.Field().Interface().(string)
 	if ok {
