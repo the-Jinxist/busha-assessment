@@ -6,7 +6,7 @@ require (
 	github.com/gin-gonic/gin v1.8.2
 	github.com/go-playground/validator/v10 v10.11.2
 	github.com/golang-migrate/migrate/v4 v4.15.2
-	github.com/lib/pq v1.10.0
+	github.com/lib/pq v1.10.7
 	github.com/redis/go-redis/v9 v9.0.2
 )
 

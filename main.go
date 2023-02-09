@@ -11,7 +11,7 @@ import (
 	"github.com/the-Jinxist/busha-assessment/services"
 	"github.com/the-Jinxist/busha-assessment/util"
 
-	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/github"
 )
@@ -26,8 +26,6 @@ func main() {
 	if err != nil {
 		log.Fatalf("error while opening database: %s", err)
 	}
-
-	runDBMigrations("github.com://the-Jinxist/busha-assessment/database/migration#main", config.DBSource)
 
 	redisClient := cache.NewRedis(config)
 
@@ -53,19 +51,21 @@ func runHTTPServer(config util.Config, store database.Store, movieService servic
 	}
 }
 
-func runDBMigrations(migrationURL string, dbSourceString string) {
+// func runDBMigrations(migrationURL string, dbSourceString string) {
 
-	log.Printf("migrationURL: %s, dbSourceString: %s", migrationURL, dbSourceString)
+// 	log.Printf("migrationURL: %s, dbSourceString: %s", migrationURL, dbSourceString)
 
-	migration, err := migrate.New(dbSourceString, migrationURL)
-	if err != nil {
-		log.Fatalf("cannot create new migrate instance: %s", err.Error())
-	}
+// 	migration, err := migrate.New(dbSourceString, migrationURL)
+// 	if err != nil {
+// 		log.Fatalf("cannot create new migrate instance: %s", err.Error())
+// 	}
 
-	err = migration.Up()
-	if err != nil && err != migrate.ErrNoChange {
-		log.Fatalf("cannot run up migrations: %s", err.Error())
-	}
+// 	err = migration.Up()
+// 	if err != nil && err != migrate.ErrNoChange {
+// 		log.Fatalf("cannot run up migrations: %s", err.Error())
+// 	}
 
-	log.Fatalf("db migrated successfully")
-}
+// 	log.Fatalf("db migrated successfully")
+// }
+
+//migrate -source file://database/migration -database postgres://jofnubiptoiukk:a3286e662fd885982c0b39ab41dacd750c3b2f2387821d468a337072fe1f9d90@ec2-54-80-122-11.compute-1.amazonaws.com:5432/d25f7438bu2ist up 1
