@@ -2,12 +2,15 @@ package services
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"time"
 
+	"github.com/redis/go-redis/v9"
 	"github.com/the-Jinxist/busha-assessment/services/models"
 )
 
@@ -15,7 +18,9 @@ const (
 	BASE_URL = "https://swapi.dev/api/"
 )
 
-type SwapiService struct{}
+type SwapiService struct {
+	RedisClient *redis.Client
+}
 
 func (service *SwapiService) getBaseURL() string {
 	return BASE_URL
@@ -81,12 +86,38 @@ func (service *SwapiService) GetMovieCharacters(movieID string) ([]*models.Chara
 
 func (service *SwapiService) GetCharacterFromURL(url string) (*models.CharactersResponse, error) {
 	response := &models.SwapiCharacters{}
-	err := makeHTTPRequest(url, response)
+
+	err := service.RedisClient.Get(context.Background(), url).Scan(response)
+	if err != nil {
+		if err != redis.Nil {
+			log.Printf("error while getting redis value: %s", err)
+			return nil, err
+		}
+	}
+
+	character := &models.CharactersResponse{}
+
+	if len(response.Name) > 0 {
+
+		character.BirthYear = response.BirthYear
+		character.Gender = response.Gender
+		character.Height = response.Height
+		character.Name = response.Name
+		character.URL = response.URL
+
+		return character, nil
+	}
+
+	err = makeHTTPRequest(url, response)
 	if err != nil {
 		return nil, err
 	}
 
-	character := &models.CharactersResponse{}
+	_, err = service.RedisClient.Set(context.Background(), url, response, time.Hour).Result()
+	if err != nil {
+		return nil, err
+	}
+
 	character.BirthYear = response.BirthYear
 	character.Gender = response.Gender
 	character.Height = response.Height
@@ -100,7 +131,27 @@ func (service *SwapiService) GetFilmFromID(movieID string) (*models.SwapiMovie, 
 	url := fmt.Sprintf("%s%s%s", service.getBaseURL(), "films/", movieID)
 	response := &models.SwapiMovie{}
 
-	makeHTTPRequest(url, response)
+	err := service.RedisClient.Get(context.Background(), url).Scan(response)
+	if err != nil {
+		if err != redis.Nil {
+			log.Printf("error while getting redis value: %s", err)
+			return nil, err
+		}
+	}
+
+	if len(response.Characters) > 0 {
+		return response, nil
+	}
+
+	err = makeHTTPRequest(url, response)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = service.RedisClient.Set(context.Background(), url, response, time.Hour).Result()
+	if err != nil {
+		return nil, err
+	}
 
 	return response, nil
 }
@@ -139,23 +190,3 @@ func makeHTTPRequest(url string, response interface{}) error {
 	}
 	return nil
 }
-
-// layout := "1977-05-25"
-// sort.Slice(results, func(i, j int) bool {
-
-// 	// values := strings.Split(results[i].ReleaseDate, "-")
-// 	movie1Time, err := time.Parse(layout, results[i].ReleaseDate)
-// 	if err != nil {
-// 		log.Printf("error while parsing: %s", err)
-// 		return false
-// 	}
-
-// 	movie2Time, err := time.Parse(layout, results[j].ReleaseDate)
-
-// 	if err != nil {
-// 		log.Printf("error while parsing: %s", err)
-// 		return false
-// 	}
-
-// 	return movie1Time.Before(movie2Time)
-// })

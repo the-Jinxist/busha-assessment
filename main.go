@@ -7,7 +7,6 @@ import (
 	_ "github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/github"
-	"github.com/redis/go-redis/v9"
 	"github.com/the-Jinxist/busha-assessment/api"
 	"github.com/the-Jinxist/busha-assessment/database/cache"
 	database "github.com/the-Jinxist/busha-assessment/database/sqlc"
@@ -26,15 +25,19 @@ func main() {
 		log.Fatalf("error while opening database: %s", err)
 	}
 
-	service := &services.SwapiService{}
+	redisClient := cache.NewRedis(config)
+
+	service := &services.SwapiService{
+		RedisClient: redisClient,
+	}
 
 	store := database.NewStore(conn)
-	redisClient := cache.NewRedis(config)
-	runHTTPServer(config, store, service, redisClient)
+
+	runHTTPServer(config, store, service)
 }
 
-func runHTTPServer(config util.Config, store database.Store, movieService services.MovieService, redis *redis.Client) {
-	server, err := api.NewServer(config, store, movieService, redis)
+func runHTTPServer(config util.Config, store database.Store, movieService services.MovieService) {
+	server, err := api.NewServer(config, store, movieService)
 
 	if err != nil {
 		log.Fatalf("cannot create server: %s", err)

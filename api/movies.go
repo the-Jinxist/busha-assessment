@@ -39,9 +39,17 @@ func (i *RedisStruct) UnmarshalBinary(data []byte) error {
 func (s *Server) getMovies(ctx *gin.Context) {
 
 	var rawResponse []*models.MovieResponse
+	redisKey := ctx.Request.URL.String()
 
 	redisResponse := RedisStruct{}
-	err := s.redisClient.Get(ctx, "movies").Scan(&redisResponse)
+
+	redisClient, err := s.GetRedisClient()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	err = redisClient.Get(ctx, redisKey).Scan(&redisResponse)
 	if err != nil {
 		if err != redis.Nil {
 			log.Printf("error while getting redis value: %s", err)
@@ -83,7 +91,7 @@ func (s *Server) getMovies(ctx *gin.Context) {
 	}
 
 	redisResponse.Movies = rawResponse
-	_, err = s.redisClient.Set(ctx, "movies", redisResponse, time.Hour).Result()
+	_, err = redisClient.Set(ctx, redisKey, redisResponse, time.Hour).Result()
 
 	if err != nil {
 		log.Printf("error while saving redis value: %s", err)

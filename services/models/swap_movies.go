@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type SwapMovieList struct {
 	Count       int          `json:"count"`
@@ -8,6 +11,7 @@ type SwapMovieList struct {
 	Previous    interface{}  `json:"previous"`
 	SwapiMovies []SwapiMovie `json:"SwapiMovie"`
 }
+
 type SwapiMovie struct {
 	Title        string    `json:"title"`
 	EpisodeID    int       `json:"episode_id"`
@@ -23,4 +27,13 @@ type SwapiMovie struct {
 	Created      time.Time `json:"created"`
 	Edited       time.Time `json:"edited"`
 	URL          string    `json:"url"`
+}
+
+func (i SwapiMovie) MarshalBinary() (data []byte, err error) {
+	bytes, err := json.Marshal(i)
+	return bytes, err
+}
+
+func (i *SwapiMovie) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, i)
 }

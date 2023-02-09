@@ -52,7 +52,7 @@ func (s *Server) getCharacters(ctx *gin.Context) {
 		return
 	}
 
-	redisKey, err := json.Marshal(request)
+	redisKey := ctx.Request.URL.String()
 
 	if err != nil {
 		log.Printf("error while marshalling request: %s", err)
@@ -61,7 +61,14 @@ func (s *Server) getCharacters(ctx *gin.Context) {
 	}
 
 	response := CharacterAPIResponse{}
-	err = s.redisClient.Get(ctx, string(redisKey)).Scan(&response)
+
+	redisClient, err := s.GetRedisClient()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
+		return
+	}
+
+	err = redisClient.Get(ctx, string(redisKey)).Scan(&response)
 	if err != nil {
 		if err != redis.Nil {
 			log.Printf("error while getting redis value: %s", err)
@@ -103,7 +110,7 @@ func (s *Server) getCharacters(ctx *gin.Context) {
 
 	//save to redis using a combination of the endpoint and the params
 	response.Characters = finalCharacters
-	s.redisClient.Set(ctx, string(redisKey), response, time.Hour)
+	redisClient.Set(ctx, string(redisKey), response, time.Hour)
 
 	//send to user
 	ctx.JSON(http.StatusOK, gin.H{
@@ -184,40 +191,24 @@ func sortCharacters(sortKey string, orderKey string, characters []*models.Charac
 }
 
 func characterSortingWhenAsc(character1 *models.CharactersResponse, character2 *models.CharactersResponse) bool {
-	if character1.Gender == "male" && character2.Gender == "female" {
+	if character1.Gender == "male" {
 		return true
 	}
 
-	if character1.Gender == "female" && character2.Gender == "male" {
-		return false
-	}
-
-	if character1.Gender != "n/a" && character2.Gender == "n/a" {
+	if character1.Gender == "female" && character2.Gender == "n/a" {
 		return true
 	}
 
-	if character1.Gender == character2.Gender {
-		return true
-	}
-
-	return true
+	return false
 }
 
 func characterSortingWhenDsc(character1 *models.CharactersResponse, character2 *models.CharactersResponse) bool {
-	if character1.Gender == "male" && character2.Gender == "female" {
-		return false
-	}
-
-	if character1.Gender == "female" && character2.Gender == "male" {
+	if character1.Gender == "female" {
 		return true
 	}
 
-	if character1.Gender != "n/a" && character2.Gender == "n/a" {
-		return false
-	}
-
-	if character1.Gender == character2.Gender {
-		return false
+	if character1.Gender == "male" && character2.Gender == "n/a" {
+		return true
 	}
 
 	return false

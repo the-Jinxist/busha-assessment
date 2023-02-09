@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type SwapiCharacters struct {
 	Name      string        `json:"name"`
@@ -19,4 +22,13 @@ type SwapiCharacters struct {
 	Created   time.Time     `json:"created"`
 	Edited    time.Time     `json:"edited"`
 	URL       string        `json:"url"`
+}
+
+func (i SwapiCharacters) MarshalBinary() (data []byte, err error) {
+	bytes, err := json.Marshal(i)
+	return bytes, err
+}
+
+func (i *SwapiCharacters) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, i)
 }

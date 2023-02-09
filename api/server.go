@@ -1,6 +1,9 @@
 package api
 
 import (
+	"fmt"
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
@@ -16,16 +19,14 @@ type Server struct {
 	router       *gin.Engine
 	config       util.Config
 	MovieService services.MovieService
-	redisClient  *redis.Client
 }
 
-func NewServer(config util.Config, store database.Store, movieService services.MovieService, redis *redis.Client) (*Server, error) {
+func NewServer(config util.Config, store database.Store, movieService services.MovieService) (*Server, error) {
 
 	server := &Server{
 		store:        store,
 		config:       config,
 		MovieService: movieService,
-		redisClient:  redis,
 	}
 
 	server.serveRouter()
@@ -57,9 +58,21 @@ func (server *Server) Start(address string) error {
 	return server.router.Run(address)
 }
 
+// Startes the HTTP server on a specific address
+func (server *Server) GetRedisClient() (*redis.Client, error) {
+	service, ok := server.MovieService.(*services.SwapiService)
+	if !ok {
+		log.Println("error while casting MovieService to SwapiService")
+		return nil, fmt.Errorf("error while casting MovieService to SwapiService")
+	}
+
+	log.Printf("SwapiServer: %v", service)
+	return service.RedisClient, nil
+}
+
 func errorResponse(err error, status int) gin.H {
 	return gin.H{
 		"status": status,
-		"error":  err.Error(),
+		"error":  err,
 	}
 }
