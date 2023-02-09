@@ -191,11 +191,12 @@ func sortCharacters(sortKey string, orderKey string, characters []*models.Charac
 }
 
 func characterSortingWhenAsc(character1 *models.CharactersResponse, character2 *models.CharactersResponse) bool {
-	if character1.Gender == "male" {
+
+	if character1.Gender == "female" {
 		return true
 	}
 
-	if character1.Gender == "female" && character2.Gender == "n/a" {
+	if character1.Gender == "male" && character2.Gender == "n/a" {
 		return true
 	}
 
@@ -203,11 +204,11 @@ func characterSortingWhenAsc(character1 *models.CharactersResponse, character2 *
 }
 
 func characterSortingWhenDsc(character1 *models.CharactersResponse, character2 *models.CharactersResponse) bool {
-	if character1.Gender == "female" {
+	if character1.Gender == "n/a" {
 		return true
 	}
 
-	if character1.Gender == "male" && character2.Gender == "n/a" {
+	if character1.Gender == "female" && character2.Gender == "male" {
 		return true
 	}
 

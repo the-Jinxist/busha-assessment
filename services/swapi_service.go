@@ -31,10 +31,27 @@ func (service *SwapiService) GetMovies() ([]*models.MovieResponse, error) {
 	url := fmt.Sprintf("%s%s", service.getBaseURL(), "films/")
 	response := &models.SwapMovieList{}
 
-	err := makeHTTPRequest(url, response)
+	err := service.RedisClient.Get(context.Background(), url).Scan(response)
 	if err != nil {
-		log.Printf("error while making http request: %s", err)
-		return nil, err
+		if err != redis.Nil {
+			log.Printf("error while getting redis value: %s", err)
+			return nil, err
+		}
+	}
+
+	if len(response.SwapiMovies) == 0 {
+
+		err = makeHTTPRequest(url, response)
+		if err != nil {
+			log.Printf("error while making http request: %s", err)
+			return nil, err
+		}
+
+		_, err = service.RedisClient.Set(context.Background(), url, response, time.Hour).Result()
+		if err != nil {
+			return nil, err
+		}
+
 	}
 
 	results := make([]*models.MovieResponse, 0, 7)

@@ -9,7 +9,16 @@ type SwapMovieList struct {
 	Count       int          `json:"count"`
 	Next        interface{}  `json:"next"`
 	Previous    interface{}  `json:"previous"`
-	SwapiMovies []SwapiMovie `json:"SwapiMovie"`
+	SwapiMovies []SwapiMovie `json:"results"`
+}
+
+func (i SwapMovieList) MarshalBinary() (data []byte, err error) {
+	bytes, err := json.Marshal(i)
+	return bytes, err
+}
+
+func (i *SwapMovieList) UnmarshalBinary(data []byte) error {
+	return json.Unmarshal(data, i)
 }
 
 type SwapiMovie struct {

@@ -5,10 +5,8 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/redis/go-redis/v9"
 	"github.com/the-Jinxist/busha-assessment/services/models"
 )
 
@@ -39,45 +37,8 @@ func (i *RedisStruct) UnmarshalBinary(data []byte) error {
 func (s *Server) getMovies(ctx *gin.Context) {
 
 	var rawResponse []*models.MovieResponse
-	redisKey := ctx.Request.URL.String()
 
-	redisResponse := RedisStruct{}
-
-	redisClient, err := s.GetRedisClient()
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
-		return
-	}
-
-	err = redisClient.Get(ctx, redisKey).Scan(&redisResponse)
-	if err != nil {
-		if err != redis.Nil {
-			log.Printf("error while getting redis value: %s", err)
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
-			return
-		}
-	}
-
-	if len(redisResponse.Movies) > 0 {
-
-		rawResponse = redisResponse.Movies
-
-		apiResponse, err := s.GetFullAPIResponse(ctx, rawResponse)
-		if err != nil {
-			log.Printf("error while getting full api response: %s", err)
-			ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
-			return
-		}
-
-		ctx.JSON(http.StatusOK, gin.H{
-			"status": http.StatusOK,
-			"data":   apiResponse,
-		})
-
-		return
-	}
-
-	rawResponse, err = s.MovieService.GetMovies()
+	rawResponse, err := s.MovieService.GetMovies()
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
 		return
@@ -89,9 +50,6 @@ func (s *Server) getMovies(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
 		return
 	}
-
-	redisResponse.Movies = rawResponse
-	_, err = redisClient.Set(ctx, redisKey, redisResponse, time.Hour).Result()
 
 	if err != nil {
 		log.Printf("error while saving redis value: %s", err)

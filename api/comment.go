@@ -50,15 +50,11 @@ func (s *Server) getComments(ctx *gin.Context) {
 }
 
 type AddCommentRequest struct {
-	// MovieID          string `json:"movie_id"`
-	// Comment          string `json:"comment"`
 	MovieID int64  `json:"movie_id" binding:"required,max=6"`
 	Comment string `json:"comment" binding:"required,max=500"`
 }
 
 func (s *Server) postComment(ctx *gin.Context) {
-
-	//Enhancement: Check if a movie that corresponds to your id is available
 
 	var request AddCommentRequest
 	err := ctx.ShouldBindJSON(&request)
