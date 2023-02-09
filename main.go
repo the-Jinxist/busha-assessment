@@ -55,7 +55,7 @@ func runDBMigrations(migrationURL string, dbSourceString string) {
 
 	log.Printf("migrationURL: %s, dbSourceString: %s", migrationURL, dbSourceString)
 
-	migration, err := migrate.New(migrationURL, dbSourceString)
+	migration, err := migrate.New(dbSourceString, migrationURL)
 	if err != nil {
 		log.Fatalf("cannot create new migrate instance: %s", err.Error())
 	}
