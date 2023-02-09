@@ -25,7 +25,7 @@ func main() {
 		log.Fatalf("error while opening database: %s", err)
 	}
 
-	runDBMigrations("file://database/migration", config.DBSource)
+	runDBMigrations("github.com://the-Jinxist/busha-assessment/database/migration#main", config.DBSource)
 
 	redisClient := cache.NewRedis(config)
 
