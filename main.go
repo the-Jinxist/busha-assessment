@@ -3,7 +3,6 @@ package main
 import (
 	"database/sql"
 	"log"
-	"os"
 
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
@@ -21,12 +20,12 @@ func main() {
 		log.Fatalf("cannot load config: %s", err)
 	}
 
-	conn, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	conn, err := sql.Open(config.DBDriver, config.DBSource)
 	if err != nil {
 		log.Fatalf("error while opening database: %s", err)
 	}
 
-	runDBMigrations("file://database/migration", os.Getenv("DATABASE_URL"))
+	runDBMigrations("file://database/migration", config.DBSource)
 
 	redisClient := cache.NewRedis(config)
 
@@ -46,7 +45,7 @@ func runHTTPServer(config util.Config, store database.Store, movieService servic
 		log.Fatalf("cannot create server: %s", err)
 	}
 
-	err = server.Start(config.ServerAddress)
+	err = server.Start(":" + config.ServerAddress)
 	if err != nil {
 		log.Fatalf("start server: %s", err)
 	}

@@ -1,8 +1,6 @@
 package util
 
-import (
-	"github.com/spf13/viper"
-)
+import "os"
 
 // Config stores all the configurations of an application
 // The values are read by viper from a config file or environment variable
@@ -17,21 +15,12 @@ type Config struct {
 
 // This function will load environmental variables from file or environmental variables
 func LoadConfig(path string) (config Config, err error) {
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env") //The file type could be json, xml and such
+	config = Config{}
 
-	viper.AutomaticEnv()
-
-	err = viper.ReadInConfig()
-	if err != nil {
-		return
-	}
-
-	err = viper.Unmarshal(&config)
-	if err != nil {
-		return
-	}
+	config.DBDriver = "postgres"
+	config.DBSource = os.Getenv("DATABASE_URL")
+	config.ServerAddress = os.Getenv("PORT")
+	config.RedisAddress = os.Getenv("REDIS_URL")
 
 	return
 }
