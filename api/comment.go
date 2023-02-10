@@ -21,7 +21,7 @@ func (s *Server) getComments(ctx *gin.Context) {
 
 	if err != nil {
 		log.Printf("error while binding query: %s", err)
-		ctx.JSON(http.StatusBadRequest, errorResponse(ReformatValidationError(err), http.StatusBadRequest))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err, http.StatusBadRequest))
 		return
 	}
 
@@ -61,7 +61,7 @@ func (s *Server) postComment(ctx *gin.Context) {
 
 	if err != nil {
 		log.Printf("error while binding json: %s", err)
-		ctx.JSON(http.StatusBadRequest, errorResponse(ReformatValidationError(err), http.StatusBadRequest))
+		ctx.JSON(http.StatusBadRequest, errorResponse(err, http.StatusBadRequest))
 		return
 	}
 
