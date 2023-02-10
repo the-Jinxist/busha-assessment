@@ -73,6 +73,6 @@ func (server *Server) GetRedisClient() (*redis.Client, error) {
 func errorResponse(err error, status int) gin.H {
 	return gin.H{
 		"status": status,
-		"error":  err,
+		"error":  err.Error(),
 	}
 }
