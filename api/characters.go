@@ -46,7 +46,7 @@ func (s *Server) getCharacters(ctx *gin.Context) {
 
 	if err != nil {
 		log.Printf("error while binding query: %s", err)
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusBadRequest))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(ReformatValidationError(err), http.StatusBadRequest))
 		return
 	}
 
