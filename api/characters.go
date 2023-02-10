@@ -9,10 +9,18 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/the-Jinxist/busha-assessment/services/models"
+	"github.com/the-Jinxist/busha-assessment/util"
 )
 
+type Metadata struct {
+	CharacterNumber       int    `json:"total_number_of_characters"`
+	TotalHeightInCm       string `json:"total_height_in_cm"`
+	TotalHeightInFeetInch string `json:"total_height_in_feet_inch"`
+}
+
 type CharacterAPIResponse struct {
-	Characters []*models.CharactersResponse `json:"characters"`
+	Characters        []*models.CharactersResponse `json:"characters"`
+	CharacterMetadata *Metadata                    `json:"character_metadata"`
 }
 
 func (i CharacterAPIResponse) MarshalBinary() (data []byte, err error) {
@@ -70,8 +78,34 @@ func (s *Server) getCharacters(ctx *gin.Context) {
 		filteredCharacters := FilterCharacters(request.FilterBy, characters)
 		finalCharacters = filteredCharacters
 	}
+	metaData := &Metadata{}
+	totalHeight := 0
+
+	for index := range finalCharacters {
+		character := finalCharacters[index]
+		height, err := strconv.Atoi(character.Height)
+
+		if err != nil {
+
+			height = 0
+			log.Printf("error while parsing height: %s", err)
+		}
+
+		totalHeight += height
+	}
+
+	metaData.CharacterNumber = len(finalCharacters)
+	metaData.TotalHeightInCm = fmt.Sprintf("%dcm", totalHeight)
+
+	feetInch, err := util.ConvertCMHeightToFtInch(totalHeight)
+	if err != nil {
+		metaData.TotalHeightInFeetInch = "0ft/0inch"
+		log.Printf("error while ConvertCMHeightToFtInch: %s", err)
+	}
+	metaData.TotalHeightInFeetInch = feetInch
 
 	response.Characters = finalCharacters
+	response.CharacterMetadata = metaData
 
 	//send to user
 	ctx.JSON(http.StatusOK, gin.H{
