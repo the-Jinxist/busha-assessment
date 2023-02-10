@@ -4,3 +4,6 @@ This is my attempt at the assessment for the backend developer position at Busha
 
 ## Getting Started
 The base url for this application is https://neo-swapi.herokuapp.com/. The documentation for this service can be found at: https://documenter.getpostman.com/view/17909079/2s935soh6Z
+
+## Dockerization
+I was able to dockerize the environment: docker.io/library/busha-assessment:latest. The Dockerfile should also be available in the project
