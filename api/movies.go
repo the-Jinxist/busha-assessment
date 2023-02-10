@@ -40,7 +40,7 @@ func (s *Server) getMovies(ctx *gin.Context) {
 
 	rawResponse, err := s.MovieService.GetMovies()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err, http.StatusInternalServerError))
+		ctx.JSON(http.StatusInternalServerError, errorResponse(ReformatValidationError(err), http.StatusInternalServerError))
 		return
 	}
 
