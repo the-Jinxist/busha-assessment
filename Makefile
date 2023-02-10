@@ -20,4 +20,7 @@ sqlc:
 server:
 	go run main.go
 
+create_swapi_docker_service:
+	docker run --name neo-swapi --network busha-network -p 8080:8080 -e GIN_MODE=release -e DB_SOURCE="postgresql://root:secret@assessment-image:5432/comments_db?sslmode=disable" -e REDIS_ADDRESS="redis:6379" busha-assessment:latest
+
 .PHONY: postgres createdb dropdb migrateup migratedown sqlc server
