@@ -8,14 +8,15 @@ func ConvertCMHeightToFtInch(heightInCm int) (string, error) {
 
 	feetInches := ""
 
-	rawInch := float64(heightInCm) / 2.54
-	numberOfFeet := rawInch / 12
+	firstInch := float32(heightInCm) / 2.54
 
-	feetInches += fmt.Sprintf("%dft/", int(numberOfFeet))
+	feet := firstInch / 12
+	feetInches += fmt.Sprintf("%dft and ", int(feet))
 
-	remainingInch := rawInch - (numberOfFeet * 12)
+	nextInch := int(feet) * 12
+	remainingInch := firstInch - float32(nextInch)
 
-	feetInches += fmt.Sprintf("%finch", remainingInch)
+	feetInches += fmt.Sprintf("%.2f inches", float32(remainingInch))
 
 	return feetInches, nil
 
